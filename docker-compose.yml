@@ -118,6 +118,7 @@ services:
     hostname: spark-iceberg
     entrypoint: |
       /bin/bash -c "
+      pip install jupyterlab_materialdarker && \
       jupyter lab --notebook-dir=/opt/notebook --ip='*' --NotebookApp.token='' --NotebookApp.password='' --port=8888 --no-browser --allow-root
       "
     ports:
