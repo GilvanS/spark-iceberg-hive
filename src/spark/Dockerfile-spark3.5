@@ -36,10 +36,24 @@ RUN chsh -s /usr/bin/zsh
 
 # Configure PYTHON
 ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.9.7-src.zip:$PYTHONPATH
+ENV SPARK_HOME=/opt/spark
 COPY ./src/jupyter/requirements.txt /opt/requirements.txt
 RUN pip3 install -r /opt/requirements.txt
 COPY ./src/jupyter/jupyter_server_config.py /root/.jupyter/
 COPY ./src/jupyter/themes.jupyterlab-settings /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/
+COPY ./src/jupyter/start-jupyter.sh /opt/spark/start-jupyter.sh
+COPY ./src/jupyter/init_spark.py /opt/spark/python/init_spark.py
+COPY ./src/spark/spark-env.sh /opt/spark/conf/spark-env.sh
+RUN chmod +x /opt/spark/start-jupyter.sh && \
+    sed -i 's/\r$//' /opt/spark/conf/spark-env.sh
+
+# Create the assembly directory structure that PySpark expects
+# PySpark looks for JARs in /opt/spark/assembly/target/scala-2.12/jars
+# but in Spark 3.5.1 they are in /opt/spark/jars
+RUN mkdir -p /opt/spark/assembly/target/scala-2.12 && \
+    ln -sf /opt/spark/jars /opt/spark/assembly/target/scala-2.12/jars
+
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]

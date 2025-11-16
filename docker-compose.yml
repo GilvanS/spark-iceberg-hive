@@ -8,7 +8,7 @@ services:
     hostname: postgres
     image: postgres:11
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -116,11 +116,7 @@ services:
     image: dataincode/openlakehouse:spark-3.5
     container_name: spark-iceberg
     hostname: spark-iceberg
-    entrypoint: |
-      /bin/bash -c "
-      pip install jupyterlab_materialdarker && \
-      jupyter lab --notebook-dir=/opt/notebook --ip='*' --NotebookApp.token='' --NotebookApp.password='' --port=8888 --no-browser --allow-root
-      "
+    entrypoint: ["/opt/spark/start-jupyter.sh"]
     ports:
       - "4040:4040"
       - "8900:8888"
@@ -128,6 +124,7 @@ services:
       - minio
       - hive-metastore
     environment:
+      SPARK_HOME: /opt/spark
       SPARK_MODE: master
       SPARK_MASTER_MEMORY: 4g
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -142,7 +139,6 @@ services:
       - ./src/jupyter/jupyter_server_config.py:/root/.jupyter/jupyter_server_config.py
       - ./src/jupyter/themes.jupyterlab-settings:/root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/themes.jupyterlab-settings
       - ./src/spark/spark-defaults-iceberg.conf:/opt/spark/conf/spark-defaults.conf
-      - ./src/spark/spark-env.sh:/opt/spark/conf/spark-env.sh
 
 
 # Configure Network
